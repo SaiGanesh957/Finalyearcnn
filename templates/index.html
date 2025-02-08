@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VGG16 Recommendation System</title>
+    <style>
+      /* Gradient Background */
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background: linear-gradient(to right, #1e3c72, #2a5298);
+        color: white;
+        margin: 0;
+        padding: 20px;
+      }
+
+      /* Container Styling */
+      .container {
+        margin: 20px auto;
+        width: 80%;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        text-align: left;
+      }
+
+      /* Gradient Text */
+      .gradient-text {
+        background: linear-gradient(to right, #fd0b0b, #fb09ff, #670bfc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: bold;
+      }
+
+      /* Upload Section */
+      .upload-section {
+        margin-top: 30px;
+      }
+
+      /* Upload Button */
+      .upload-btn {
+        background: linear-gradient(90deg, #ff5733, #ffbd69);
+        color: white;
+        padding: 12px 24px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: 0.3s;
+        font-weight: bold;
+      }
+
+      .upload-btn:hover {
+        background: linear-gradient(90deg, #dd0ef0, #8223f0);
+      }
+
+      /* Image Container */
+      .image-container {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .image-container img {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        transition: transform 0.3s ease-in-out;
+      }
+
+      .image-container img:hover {
+        transform: scale(1.1);
+      }
+
+      .recommended-title {
+        margin-top: 30px;
+        font-size: 1.2em;
+        font-weight: bold;
+      }
+
+      /* Button Style */
+      .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-top: 20px;
+        font-size: 1rem;
+        font-weight: bold;
+        color: white;
+        background: linear-gradient(90deg, #ff5733, #ffbd69);
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+        text-decoration: none;
+      }
+
+      .btn:hover {
+        background: linear-gradient(90deg, #eb19f7, #5d1cf3);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>
+      Fashion Recommendation System developed by
+      <a href="https://psg95.vercel.app/" class="gradient-text"
+        >Ponnaganti SaiGanesh</a
+      >
+    </h1>
+
+    <div class="container">
+      <div class="upload-section">
+        <h2>Upload an Image</h2>
+        <input type="file" id="imageUpload" accept="image/*" />
+        <button class="upload-btn" onclick="uploadImage()">
+          Get Recommendations
+        </button>
+      </div>
+
+      <div class="results-section">
+        <h3>Uploaded Image:</h3>
+        <div id="uploadedImage"></div>
+
+        <h3 class="recommended-title">Recommended Images:</h3>
+        <div class="image-container" id="recommendedImages"></div>
+      </div>
+    </div>
+
+    <div class="container">
+      <h2>Project Overview</h2>
+      <p>
+        The exponential growth of e-commerce necessitates personalized
+        recommendation systems. This project introduces an
+        <b>ensemble learning model</b> combining
+        <b>MobileNet, DenseNet, Xception, VGG16, and VGG19</b> to enhance
+        fashion product recommendations with <b>98.34% accuracy</b>.
+      </p>
+
+      <h2>Key Features</h2>
+      <ul>
+        <li>
+          Deep Learning-based <b>image classification & recommendation</b>
+        </li>
+        <li>Uses <b>CNN architectures</b> to analyze fashion products</li>
+        <li><b>Precomputed features</b> for fast recommendations</li>
+        <li>Efficient <b>Annoy Index for similarity search</b></li>
+        <li>Scalable & optimized for real-time recommendations</li>
+      </ul>
+
+      <h2>Technologies Used</h2>
+      <p>
+        TensorFlow | Flask | Deep Learning | CNN | Python | Annoy | HTML | CSS
+      </p>
+
+      <a href="https://github.com/your-repo-link" class="btn">View on GitHub</a>
+    </div>
+
+    <script>
+      async function uploadImage() {
+        const fileInput = document.getElementById("imageUpload");
+        if (!fileInput.files.length) {
+          alert("Please upload an image.");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        // Display uploaded image
+        const uploadedImageDiv = document.getElementById("uploadedImage");
+        uploadedImageDiv.innerHTML = "";
+        const uploadedImg = document.createElement("img");
+        uploadedImg.src = URL.createObjectURL(fileInput.files[0]);
+        uploadedImg.style.width = "300px";
+        uploadedImg.style.borderRadius = "10px";
+        uploadedImg.style.boxShadow = "0 4px 10px rgba(0,0,0,0.3)";
+        uploadedImageDiv.appendChild(uploadedImg);
+
+        // Fetch recommendations
+        try {
+          const response = await fetch("/recommend", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch recommendations");
+          }
+
+          const data = await response.json();
+          displayRecommendedImages(data.recommended_images);
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Failed to get recommendations. Check the backend.");
+        }
+      }
+
+      function displayRecommendedImages(images) {
+        const recommendedContainer =
+          document.getElementById("recommendedImages");
+        recommendedContainer.innerHTML = "";
+
+        images.forEach((imgPath) => {
+          const imgElement = document.createElement("img");
+          imgElement.src = `/static/dataset/${imgPath}`;
+          imgElement.alt = "Recommended Image";
+          recommendedContainer.appendChild(imgElement);
+        });
+      }
+    </script>
+  </body>
+</html>
