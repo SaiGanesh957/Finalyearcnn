@@ -6,7 +6,7 @@ import tensorflow as tf
 from tensorflow.keras.applications.vgg16 import preprocess_input
 from tensorflow.keras.preprocessing import image
 from sklearn.metrics.pairwise import cosine_similarity
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"  # Force TensorFlow to use CPU only
+
 # Suppress TensorFlow logging
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -90,6 +90,4 @@ def recommend():
     })
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000))  # Render provides PORT dynamically
-    app.run(host="0.0.0.0", port=port, debug=False)
-
+    app.run(debug=False)
